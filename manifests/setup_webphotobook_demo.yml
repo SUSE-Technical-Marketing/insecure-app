@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: webphotobook
-        image: rmahiquesuse/webphotobook_demo:0.2.7
+        image: rmahiquesuse/webphotobook_demo:0.2.45
         ports:
         - containerPort: 5000
 ...
