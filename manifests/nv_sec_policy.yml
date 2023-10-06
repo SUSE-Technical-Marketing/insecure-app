@@ -1,0 +1,71 @@
+apiVersion: v1
+items:
+- apiVersion: neuvector.com/v1
+  kind: NvSecurityRule
+  metadata:
+    name: nv.webphotobook.myapp
+    namespace: myapp
+  spec:
+    dlp:
+      settings: []
+      status: true
+    egress: []
+    file: []
+    ingress:
+    - action: allow
+      applications:
+      - HTTP
+      name: nv.webphotobook.myapp-ingress-0
+      ports: any
+      priority: 0
+      selector:
+        comment: ""
+        criteria:
+        - key: service
+          op: =
+          value: rke2-ingress-nginx-controller.kube-system
+        - key: domain
+          op: =
+          value: kube-system
+        name: nv.rke2-ingress-nginx-controller.kube-system
+        original_name: ""
+    - action: allow
+      applications:
+      - HTTP
+      name: nv.webphotobook.myapp-ingress-1
+      ports: any
+      priority: 0
+      selector:
+        comment: ""
+        criteria: []
+        name: external
+        original_name: ""
+    process:
+    - action: allow
+      allow_update: false
+      name: pause
+      path: /pause
+    - action: allow
+      allow_update: false
+      name: python3
+      path: /usr/bin/python3.11
+    process_profile:
+      baseline: zero-drift
+    target:
+      policymode: Protect
+      selector:
+        comment: ""
+        criteria:
+        - key: service
+          op: =
+          value: webphotobook.myapp
+        - key: domain
+          op: =
+          value: myapp
+        name: nv.webphotobook.myapp
+        original_name: ""
+    waf:
+      settings: []
+      status: true
+kind: List
+metadata: null

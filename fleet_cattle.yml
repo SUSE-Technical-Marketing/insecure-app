@@ -1,0 +1,19 @@
+---
+# This is the file you need to load in the cluster running fleet
+# kubectl apply -f <this file>
+#
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepo
+metadata:
+  name: webphotobook
+  # This namespace is special and auto-wired to deploy to the local cluster, 
+  # for multiple cluster setups use fleet-default namespace.
+  namespace: fleet-local
+spec:
+  repo: https://github.com/SUSE-Technical-Marketing/insecure-app
+  branch: main
+  paths:
+  - manifests
+  # This is the target namespace where the application will be deployed.
+  targetNamespace: myapp
+...

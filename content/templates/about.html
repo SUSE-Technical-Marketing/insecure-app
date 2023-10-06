@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<p>This is version {{ version }} of {{ app_name  }}, a Quick&DirtyTM application created with insecurity in mind.</p>
+
+<p>You can find the source code in <a href="https://github.com/rmahique/webphotobook_demo">https://github.com/rmahique/webphotobook_demo</a></p>
+
+<p>Feel free to contribute by:
+<br/>
+- Adding new functionalities and capabilities, improve the look and feel ... make it a giant, with feet of clay.<br/>
+- New security bad practices, security bugs, ...  that don't impact normal application behavior, the boat can have holes but must not sink.<br/>
+- Add ways to leak data without making it too obvious... like a good treasure map.<br/>
+<br/>
+All contributions must not fix existing security issues or try to make the application more secure by design.<br/>
+<br/>
+Feel free to report new ways of hacking it.
+
+</p>
+
+
+{% endblock %}
