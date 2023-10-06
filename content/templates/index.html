@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>{% block title %} {{ app_name  }} {% endblock %}</h1>
+    <h1 class="app_name">{% block title %} {{ app_name  }} {% endblock %}</h1>
     {% for photo in photos %}
     	<a href="{{ url_for('photo', photo_id=photo['id']) }}">
     	  <div class="index_text">

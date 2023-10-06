@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1  class="photo_title">{% block title %} Edit "{{ photo['title'] }}" {% endblock %}</h1>
+<h1  class="edit_photo_title">{% block title %} Edit "{{ photo['title'] }}" {% endblock %}</h1>
 {% if photo.url is defined or  request.form.url is defined %}
 <div class="image">
   <img class="f_image" src="/{{ images_location }}{{  request.form['url'] or photo['url'] }}" alt="{{ photo['title'] }}"/>
@@ -19,9 +19,9 @@
     <div class="form-group">
         <label for="description">Description</label>
         <textarea name="description" placeholder="Description"
-                  class="form-control form_noform">{{ request.form['description'] or photo['description'] }}</textarea>
+                  class="form-control form_noform  photo_description">{{ request.form['description'] or photo['description'] }}</textarea>
     </div>
-    <div class="form-group">
+    <div class="form-group upload_image">
         <label for="image">Image</label>
         <input type="file" name="image" accept="image/*">
 

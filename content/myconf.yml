@@ -11,8 +11,14 @@ APP_NAME: My App
 BASIC_AUTH_PASSWORD: admin123
 BASIC_AUTH_USERNAME: admin
 DBNAME: photos
+DB_TYPE: mysql
+#DB_TYPE: sqlite3
 DB_FILE: database.db
+DB_HOST: mysql
+DB_USER: root
+DB_PWD: password_change_me
 DB_TABLE_NAME: photos
 IMAGES_LOCATION: images/
 MAX_CONTENT_LENGTH: 104857600
+PORT: 5001
 SECRET_KEY: abcde_changeme312312312

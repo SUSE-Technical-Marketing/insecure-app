@@ -12,8 +12,8 @@ from flask_restful import Resource, Api
 from flask_basicauth import BasicAuth
 from werkzeug.exceptions import abort
 from werkzeug.utils import secure_filename
-import random, yaml, json, os, sqlite3
 
+import random, yaml, json, os, sqlite3, pymysql
 
 # Initialize Flask
 app = Flask(__name__)
@@ -22,7 +22,7 @@ app = Flask(__name__)
 num = str(random.random())
 
 # Define the options that can be changed via the API
-config_settings= ['ADMIN_USER','IMAGES_LOCATION','APP_NAME','DB_FILE']
+config_settings= ['ADMIN_USER','IMAGES_LOCATION','APP_NAME','DB_FILE','DB_TYPE','DB_TABLE_NAME','DB_HOST','DB_USER']
 
 # This will be taken from a file
 version=''
@@ -56,9 +56,14 @@ def allowed_file(filename):
 
 # Connect to the DB
 def connect_db():
-    conn = sqlite3.connect(app.config['DB_FILE'])
-    conn.row_factory = sqlite3.Row
-        # stress release, this is just to do something that brings no value for the user of the APP.
+    if app.config['DB_TYPE'] == 'sqlite3':
+      conn = sqlite3.connect(app.config['DB_FILE'])
+      conn.row_factory = sqlite3.Row
+    elif app.config['DB_TYPE'] == 'mysql':
+      # a feature not a bug
+      con = pymysql.connect(host=app.config['DB_HOST'],user=app.config['DB_USER'],passwd=app.config['DB_PWD'],db=app.config['DBNAME'],cursorclass=pymysql.cursors.DictCursor, autocommit=True)
+      conn = con.cursor()
+    # stress release, this is just to do something that brings no value for the user of the APP.
     os.system('ping google.com -c 1 -w 1 -W 1 -q')
     return conn
 
@@ -67,7 +72,11 @@ def connect_db():
 class Photo(Resource):
   def get_photo(photo_id):
     conn = connect_db()
-    photo = conn.execute('SELECT * FROM ' + app.config['DB_TABLE_NAME'] + ' WHERE id = ?',(photo_id,)).fetchone()
+    if app.config['DB_TYPE'] == 'sqlite3':
+      photo = conn.execute('SELECT * FROM ' + app.config['DB_TABLE_NAME'] + ' WHERE id = ?',(photo_id,)).fetchone()
+    else:
+      conn.execute('SELECT * FROM ' + app.config['DB_TABLE_NAME'] + ' WHERE id = %s',(photo_id,))
+      photo = conn.fetchone()
     conn.close()
     if photo is None:
   	  abort(404)
@@ -78,15 +87,25 @@ class Photo(Resource):
     # Write the image file/s to a directory
     if image.filename != '' and allowed_file(image.filename):
       image_path = num + '_' + secure_filename(image.filename)
-      image.save( app.config['IMAGES_LOCATION'] + image_path )      
-      conn.execute('UPDATE ' + app.config['DB_TABLE_NAME'] + ' SET title = ?, description = ?, url = ?'
+      image.save( app.config['IMAGES_LOCATION'] + image_path )
+      if app.config['DB_TYPE'] == 'sqlite3':
+        conn.execute('UPDATE ' + app.config['DB_TABLE_NAME'] + ' SET title = ?, description = ?, url = ?'
                 ' WHERE id = ?',
                 (title, description, image_path, id))
+      else:
+        conn.execute('UPDATE ' + app.config['DB_TABLE_NAME'] + ' SET title = %s, description = %s, url = %s'
+                ' WHERE id = %s',
+                (title, description, image_path, id))
     else:
-      conn.execute('UPDATE ' + app.config['DB_TABLE_NAME'] + ' SET title = ?, description = ?'
+      if app.config['DB_TYPE'] == 'sqlite3':
+        conn.execute('UPDATE ' + app.config['DB_TABLE_NAME'] + ' SET title = ?, description = ?'
                 ' WHERE id = ?',
-                (title, description, id))      
-    conn.commit()
+                (title, description, id))
+        conn.commit()
+      else:
+        conn.execute('UPDATE ' + app.config['DB_TABLE_NAME'] + ' SET title = %s, description = %s'
+                ' WHERE id = %s',
+                (title, description, id))
     conn.close()
     return id, 201
 
@@ -95,14 +114,21 @@ class Photo(Resource):
     if photo['url'] is not None:
       os.remove(app.config['IMAGES_LOCATION'] + photo['url'])
     conn = connect_db()
-    conn.execute('DELETE FROM ' + app.config['DB_TABLE_NAME'] + ' WHERE id = ?', (id,))
-    conn.commit()
+    if app.config['DB_TYPE'] == 'sqlite3':
+      conn.execute('DELETE FROM ' + app.config['DB_TABLE_NAME'] + ' WHERE id = ?', (id,))
+      conn.commit()
+    else:
+      conn.execute('DELETE FROM ' + app.config['DB_TABLE_NAME'] + ' WHERE id = %s', (id,))
     conn.close()
     return '', 204
     
   def get(self, photo_id):
     conn = connect_db()
-    photo = conn.execute('SELECT * FROM ' + app.config['DB_TABLE_NAME'] + ' WHERE id = ?',(photo_id,)).fetchone()
+    if app.config['DB_TYPE'] == 'sqlite3':
+      photo = conn.execute('SELECT * FROM ' + app.config['DB_TABLE_NAME'] + ' WHERE id = ?',(photo_id,)).fetchone()
+    else:
+      conn.execute('SELECT * FROM ' + app.config['DB_TABLE_NAME'] + ' WHERE id = %s',(photo_id,))
+      photo = conn.fetchone()
     conn.close()
     if photo is None:
   	  abort(404)
@@ -123,9 +149,13 @@ class Photos(Resource):
   # Returns a list of photos
   def get_photos():
     conn = connect_db()
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    photos = c.execute('SELECT * FROM ' + app.config['DB_TABLE_NAME']).fetchall()
+    if app.config['DB_TYPE'] == 'sqlite3':
+      conn.row_factory = sqlite3.Row
+      c = conn.cursor()
+      photos = c.execute('SELECT * FROM ' + app.config['DB_TABLE_NAME']).fetchall()
+    else:
+      conn.execute('SELECT * FROM ' + app.config['DB_TABLE_NAME'])
+      photos = conn.fetchall()
     conn.close()
     return photos
 
@@ -136,13 +166,22 @@ class Photos(Resource):
     # Save the image file/s to a directory
     if image !=None and image.filename != '' and allowed_file(image.filename):
       image_path = num + '_' + secure_filename(image.filename)
-      image.save( app.config['IMAGES_LOCATION'] + image_path )      
-      conn.execute('INSERT INTO ' + app.config['DB_TABLE_NAME'] + ' (title, description, url) VALUES (?, ?, ?)',
+      image.save( app.config['IMAGES_LOCATION'] + image_path )
+      if app.config['DB_TYPE'] == 'sqlite3':
+        conn.execute('INSERT INTO ' + app.config['DB_TABLE_NAME'] + ' (title, description, url) VALUES (?, ?, ?)',
                         (title, description, image_path ))
+      else:
+        conn.execute('INSERT INTO ' + app.config['DB_TABLE_NAME'] + ' (title, description, url) VALUES (%s, %s, %s)',
+                        (title, description, image_path))
+
     else:
-      conn.execute('INSERT INTO ' + app.config['DB_TABLE_NAME'] + ' (title, description) VALUES (?, ?)',
+      if app.config['DB_TYPE'] == 'sqlite3':
+        conn.execute('INSERT INTO ' + app.config['DB_TABLE_NAME'] + ' (title, description) VALUES (?, ?)',
                         (title, description ))
-    conn.commit()
+        conn.commit()
+      else:
+        conn.execute('INSERT INTO ' + app.config['DB_TABLE_NAME'] + ' (title, description) VALUES (%s, %s)',
+                        (title, description ))
     conn.close()
     return '', 201
 
@@ -182,7 +221,6 @@ api.add_resource(Photo, '/api/photo/<photo_id>', methods=('GET', 'DEL', 'POST'))
 api.add_resource(Photos, '/api/photos', methods=('GET', 'POST'))
 api.add_resource(Settings, '/api/settings', methods=('GET', 'POST'))
 app.register_blueprint(api_bp)
-
 
 # Define the website routes
 @app.route('/')
@@ -248,14 +286,15 @@ def delete(id):
     flash('"{}" was successfully deleted!'.format(photo['title']))
     return redirect(url_for('index'))
 
+
+
 @app.route( '/' + app.config['IMAGES_LOCATION'] + '<filename>')
 def upload(filename):
     return send_from_directory(app.config['IMAGES_LOCATION'], filename)
 
-
 # Start #
 if __name__ == '__main__':
     print("This is version: " + version)
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=app.config['PORT'])
 
   

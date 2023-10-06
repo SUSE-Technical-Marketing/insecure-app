@@ -72,4 +72,4 @@ tolerations: []
 affinity: {}
 orders:
   newDeployment:
-    imageTag: sha256:1aa97cb72b86d3dd091877a6b450df9bef9937b680908debbfca5e10bc4c9038
+    imageTag: sha256:9428b064871d70a276d4d192213f3678afdb7d5b52ed29a76f82cb16dd2c68e2

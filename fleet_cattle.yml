@@ -5,15 +5,15 @@
 apiVersion: fleet.cattle.io/v1alpha1
 kind: GitRepo
 metadata:
-  name: webphotobook
+  name: webphotobook-dev
   # This namespace is special and auto-wired to deploy to the local cluster, 
   # for multiple cluster setups use fleet-default namespace.
   namespace: fleet-local
 spec:
   repo: https://github.com/SUSE-Technical-Marketing/insecure-app
-  branch: main
+  branch: dev
   paths:
   - manifests
   # This is the target namespace where the application will be deployed.
-  targetNamespace: myapp
+  targetNamespace: myapp-dev
 ...

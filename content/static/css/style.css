@@ -27,15 +27,21 @@ img.f_image {
   background-color: darkolivegreen;
   color: white;
   padding: 1px 4px;
-  margin: 15%;
+ 
   
 }
 
 .photo_title {
    font-family: 'JelleeBold';
    font-weight: normal;
-   font-style: normal; 
+   font-style: normal;
+   color: #7591B4;
 }
+
+.photo_description {
+  color: darkgoldenrod;
+}
+
 
 .form_noform {
     border: 0px;
@@ -47,9 +53,26 @@ label {
    font-weight: bold;
 }
 h1 {
-    color: darkgreen;
+    color: #1B294E;
     text-align: center;
+    margin: 30px;
+    font-family: 'JelleeBold';
 }
+
+
+h1.app_name {
+    text-shadow: 5px 10px 10px darkgoldenrod;
+    text-transform: capitalize;
+    font-weight: bolder;
+    font-style: normal;
+    
+}
+
+h1.edit_photo_title {
+
+
+}
+
 
 div.index_image {
  right: 0;
@@ -68,6 +91,50 @@ div.index_text {
   width: 50%;
   
 }
+.photo_details, .index_details {
+   margin: 3px;
+
+}
+
+nav {
+  border-bottom-style: groove;
+  border-bottom-color: lightgreen;
+  margin-bottom: 10px;
+}
+
+.navbar-brand {
+  padding-left: 10px;
+  font-family: 'JelleeBold';
+}
+.nav-rightside {
+  right: 0%;
+  position: absolute;
+    padding-right: 10px;
+}
+
+.bottom-line {
+  width: 100%;
+  position: absolute;
+  padding: 20px;
+  margin-top: 10px;
+  border-top-style: ridge;
+  border-top-width: 1px;
+  border-top-color: #EDFFE1;
+  border-top-left-radius: 2;
+  background-color: #FCFFFA;
+
+}
+
+input {
+  padding: 5px;
+}
+
+.upload_image {
+   padding: 20px;
+}
 
 
+.badge-primary {
+  color: darkblue;
 
+}

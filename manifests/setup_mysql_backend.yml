@@ -1,0 +1,91 @@
+## Example PV
+#---
+#apiVersion: v1
+#kind: PersistentVolume
+#metadata:
+#  name: mysql-pv-volume
+#spec:
+#  accessModes:
+#    - ReadWriteOnce
+#  capacity:
+#    storage: 20Gi
+#  csi:
+#    driver: driver.longhorn.io
+#    fsType: ext4
+#    volumeAttributes:
+#      fromBackup: ''
+#      numberOfReplicas: '3'
+#      size: 2Gi
+#      staleReplicaTimeout: '20'
+#    volumeHandle: mysql-pv-claim
+#  mountOptions:
+#    - /mnt/data
+#  nodeAffinity:
+#    required:
+#      nodeSelectorTerms:
+#        - {}
+#  persistentVolumeReclaimPolicy: Retain
+#  storageClassName: harvester
+#  volumeMode: Filesystem
+#...
+## Example PVC
+#---
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: mysql-pv-claim
+#spec:
+#  storageClassName: harvester
+#  accessModes:
+#    - ReadWriteOnce
+#  resources:
+#    requests:
+#      storage: 20Gi
+#...
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: mysql
+  clusterIP: None
+...
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - image: mysql:5.6
+        name: mysql
+        env:
+          # Use secret in real usage
+        - name: MYSQL_ROOT_PASSWORD
+          value: password_change_me
+        ports:
+        - containerPort: 3306
+          name: mysql
+# Uncomment for persistent storage, make sure it match your setup
+#        volumeMounts:
+#        - name: mysql-persistent-storage
+#          mountPath: /var/lib/mysql
+#      volumes:
+#      - name: mysql-persistent-storage
+#        persistentVolumeClaim:
+#          claimName: mysql-pv-claim
+...
